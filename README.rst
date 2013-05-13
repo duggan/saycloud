@@ -1,7 +1,12 @@
 saycloud: text to soundcloud
 ============================
 
-Saycloud is a little python script (and some ancillary helpers) that glues together OSX's 'say' text-to-speech synthesiser with Soundcloud.
+Saycloud is a little python script (and some ancillary helpers) that glues together text-to-speech synthesisers with Soundcloud.
+
+Currently supported are:
+
+* OSX's 'say'
+* Google Translate TTS
 
 `You end up with something like this <https://soundcloud.com/cellols/test-foo-bar-baz#play>`_.
 
@@ -23,18 +28,24 @@ Usage
 
 .. code-block:: bash
 
-  usage: saycloud [-h] [-t TITLE] -s SAY [-v VOICE]
+  $ saycloud --help
+  usage: saycloud [-h] [-e ENGINE] [-t TITLE] -s SAY [-v VOICE]
 
   Saycloud - text to Soundcloud.
 
   optional arguments:
     -h, --help            show this help message and exit
+    -e ENGINE, --engine ENGINE
+                          The language engine to use for text to speech (default
+                          is "say").
     -t TITLE, --title TITLE
                           Track title (on Soundcloud)
     -s SAY, --say SAY     Words to say.
     -v VOICE, --voice VOICE
-                          Voice to use (get a list with "say -v ?").
-
+                          Voice to use. Get a list for say on OSX: say -v ? or
+                          for Google Tranlsate:
+                          https://developers.google.com/translate/v2/using_rest
+                          #language-params
 Example
 -------
 
@@ -56,3 +67,11 @@ Which will run something like this the first time around:
   ~/.saycloud so you don't have to enter them in future? (y/n) y
   https://soundcloud.com/cellols/test-foo-bar-baz
 
+Further reading
+---------------
+
+Google Translate has many languages/voices it can mangle your text with, some of which may just produce noise or otherwise not work.
+
+You can see a `full list of the language codes here<https://developers.google.com/translate/v2/using_rest#language-params>`_.
+
+By default, `en` is used.
