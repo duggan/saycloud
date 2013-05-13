@@ -7,17 +7,20 @@ Installation
 ------------
 
 .. code-block:: bash
-  pip install saycloud
+
+  $ pip install saycloud
 
 or
 
 .. code-block:: bash
-  easy_install saycloud
+
+  $ easy_install saycloud
 
 Usage
 -----
 
 .. code-block:: bash
+
   usage: saycloud [-h] [-t TITLE] -s SAY [-v VOICE]
 
   Saycloud - text to Soundcloud.
