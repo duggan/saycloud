@@ -11,18 +11,11 @@ import soundcloud
 import requests
 
 '''
-Saycloud - text to Soundcloud on OSX
+Saycloud - text to Soundcloud
 
 Super hacky first version! The auth, in particular, is quite pokey.
 Whole bunch of error cases it won't cover, fixes welcome.
 '''
-
-# Get arguments
-parser = ArgumentParser(description='Saycloud - text to Soundcloud.')
-parser.add_argument('-t', '--title', default="Track-%s" % datetime.datetime.now(), help='Track title (on Soundcloud)')
-parser.add_argument('-s', '--say', required=True, help='Words to say.')
-parser.add_argument('-v', '--voice', default='Alex', help='Voice to use (get a list with "say -v ?").')
-options = parser.parse_args()
 
 def try_login(failed=False):
 
@@ -84,21 +77,50 @@ def write_config(username, password):
             config.write(f)
 
 def main():
+    # Get arguments
+    parser = ArgumentParser(description='Saycloud - text to Soundcloud.')
+    parser.add_argument('-e', '--engine', default='say', help='The language engine to use for text to speech (default is "say").')
+    parser.add_argument('-t', '--title', default="Track-%s" % datetime.datetime.now(), help='Track title (on Soundcloud)')
+    parser.add_argument('-s', '--say', required=True, help='Words to say.')
+    parser.add_argument('-v', '--voice', help="Voice to use. Get a list for say on OSX: say -v ? " \
+            "or for Google Tranlsate: https://developers.google.com/translate/v2/using_rest#language-params"
+            )
+    options = parser.parse_args()
+
+    # Set correct default voice depending on engine
+    if options.voice == None:
+        if options.engine == 'say':
+            options.voice = 'Alex'
+        elif options.engine == 'google':
+            options.voice = 'en'
+
     client = try_login()
 
+    processed_speech = False
     tmp = NamedTemporaryFile(delete=False)
-    code = subprocess.call(['say', '-v', options.voice, '-o', tmp.name, "%s" % options.say])
+    extension = 'mp3' if options.engine == 'google' else 'aiff'
 
-    if code == 0:
+    if options.engine == 'google':
+        headers = {'user-agent': 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0)'}
+        r = requests.get('http://translate.google.com/translate_tts?q='+options.say+'&tl=en')
+        with open("%s.%s" % (tmp.name, extension), 'wb') as f:
+            f.write(r.content)
+            processed_speech = True
+    else:
+        if subprocess.call(['say', '-v', options.voice, '-o', tmp.name, "%s" % options.say]) == 0:
+            processed_speech = True
+
+    if processed_speech:
         # Upload to soundcloud
-        resource = open("%s.aiff" % tmp.name, 'rb')
+        resource = open("%s.%s" % (tmp.name, extension), 'rb')
         track = client.post('/tracks', track={
                 'title':options.title,
+                'sharing': 'public',
                 'asset_data': resource
             })
         # Cleaning up...
         os.unlink(tmp.name)
-        os.unlink("%s.aiff" % tmp.name)
+        os.unlink("%s.%s" % (tmp.name, extension))
         print track.permalink_url
     else:
         print "Something went wrong in text to speech conversion :("
