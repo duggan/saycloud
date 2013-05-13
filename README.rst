@@ -3,6 +3,8 @@ saycloud: text to soundcloud
 
 Saycloud is a little python script (and some ancillary helpers) that glues together OSX's 'say' text-to-speech synthesiser with Soundcloud.
 
+`You end up with something like this <https://soundcloud.com/cellols/test-foo-bar-baz#play>`_.
+
 Installation
 ------------
 
