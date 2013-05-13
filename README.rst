@@ -72,6 +72,6 @@ Further reading
 
 Google Translate has many languages/voices it can mangle your text with, some of which may just produce noise or otherwise not work.
 
-You can see a `full list of the language codes here<https://developers.google.com/translate/v2/using_rest#language-params>`_.
+You can see a `full list of the language codes here <https://developers.google.com/translate/v2/using_rest#language-params>`_.
 
 By default, `en` is used.
