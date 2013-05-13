@@ -1,0 +1,111 @@
+#!/usr/bin/env python
+import datetime
+import os
+import subprocess
+from getpass import getpass
+from ConfigParser import RawConfigParser
+from ConfigParser import ConfigParser
+from tempfile import NamedTemporaryFile
+from argparse import ArgumentParser
+import soundcloud
+import requests
+
+'''
+Saycloud - text to Soundcloud on OSX
+
+Super hacky first version! The auth, in particular, is quite pokey.
+Whole bunch of error cases it won't cover, fixes welcome.
+'''
+
+# Get arguments
+parser = ArgumentParser(description='Saycloud - text to Soundcloud.')
+parser.add_argument('-t', '--title', default="Track-%s" % datetime.datetime.now(), help='Track title (on Soundcloud)')
+parser.add_argument('-s', '--say', required=True, help='Words to say.')
+parser.add_argument('-v', '--voice', default='Alex', help='Voice to use (get a list with "say -v ?").')
+options = parser.parse_args()
+
+def try_login(failed=False):
+
+    config = get_config()
+
+    if failed:
+        username = raw_input("username: ")
+        password = getpass()
+    else:
+        config = get_config()
+        username = config['username']
+        password = config['password']
+
+    try:
+        client = soundcloud.Client(
+            client_id='6e16fa6b0ccdad192e2586ee9b622138',
+            client_secret='3aab515ace275a80ac46985fb88df65f',
+            username=username,
+            password=password
+        )
+        if username != config['username'] or password != config['password']:
+            write_config(username, password)
+        return client
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 401:
+            print "Incorrect username/password"
+            return try_login(failed=True)
+        else:
+            print e.message
+        exit(1)
+
+
+def get_config():
+    # Look for or write out config details
+    result = {'username':None, 'password': None}
+    config_file = os.path.expanduser('~/.saycloud')
+    if os.path.exists(config_file):
+        config = ConfigParser()
+        config.read(config_file)
+        result['username'] = config.get('Soundcloud', 'username')
+        result['password'] = config.get('Soundcloud', 'password')
+    return result
+
+def write_config(username, password):
+    config_file = os.path.expanduser('~/.saycloud')
+    store = False
+    question = "Do you want to store your Soundcloud username and password at\n" \
+            "~/.saycloud so you don't have to enter them in future?"
+    response = raw_input("%s (y/n) " % question)
+    if response.strip() in ['Y','y']:
+        store = True
+
+    if store:
+        config = RawConfigParser()
+        config.add_section('Soundcloud')
+        config.set('Soundcloud', 'username', username)
+        config.set('Soundcloud', 'password', password)
+        with open(os.path.expanduser(config_file), 'wb') as f:
+            config.write(f)
+
+def main():
+    client = try_login()
+
+    tmp = NamedTemporaryFile(delete=False)
+    code = subprocess.call(['say', '-v', options.voice, '-o', tmp.name, "%s" % options.say])
+
+    if code == 0:
+        # Upload to soundcloud
+        resource = open("%s.aiff" % tmp.name, 'rb')
+        track = client.post('/tracks', track={
+                'title':options.title,
+                'asset_data': resource
+            })
+        # Cleaning up...
+        os.unlink(tmp.name)
+        os.unlink("%s.aiff" % tmp.name)
+        print track.permalink_url
+    else:
+        print "Something went wrong in text to speech conversion :("
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        exit(0)
+
