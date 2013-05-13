@@ -33,3 +33,23 @@ Usage
     -v VOICE, --voice VOICE
                           Voice to use (get a list with "say -v ?").
 
+Example
+-------
+
+An entertaining little example to get you going:
+
+.. code-block:: bash
+  $ saycloud -t "Test Foo Bar Baz" -v "Cellos" -s "Foo foo foo foo foo foo bar foo foo bar bar bar baz foo foo foo foo foo foo foo bar foo bar foo bar baz"
+
+
+Which will run something like this the first time around:
+
+.. code-block:: bash
+
+  Incorrect username/password
+  username: cellols
+  Password:
+  Do you want to store your Soundcloud username and password at
+  ~/.saycloud so you don't have to enter them in future? (y/n) y
+  http://soundcloud.com/cellols/test-foo
+
