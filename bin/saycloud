@@ -87,6 +87,10 @@ def main():
             )
     options = parser.parse_args()
 
+    # Check for availability of say before trying to use it
+    if subprocess.call(['command', '-v', 'say'], stdout=open(os.devnull, 'w')) == 1:
+        options.engine = 'google'
+
     # Set correct default voice depending on engine
     if options.voice == None:
         if options.engine == 'say':
