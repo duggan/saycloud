@@ -3,11 +3,8 @@
 from setuptools import setup, find_packages
 from os.path import join, dirname
 
-def read(fname):
-    return open(join(dirname(__file__), fname)).read()
-
 PKG = 'Saycloud'
-VERSION = '0.2.0'
+VERSION = '0.2.2'
 
 requires = ['setuptools', 'soundcloud']
 scripts = ['bin/saycloud']
@@ -16,7 +13,7 @@ setup(
     name=PKG,
     version=VERSION,
     description="Saycloud - text to Soundcloud",
-    long_description=read('README.rst'),
+    long_description=open('README.rst').read(),
     author="Ross Duggan",
     author_email="ross.duggan@acm.org",
     url="http://github.com/duggan/saycloud",
