@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 from os.path import join, dirname
 
 PKG = 'Saycloud'
-VERSION = '0.2.2'
+VERSION = '0.2.4'
 
 requires = ['setuptools', 'soundcloud']
 scripts = ['bin/saycloud']

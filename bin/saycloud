@@ -76,6 +76,31 @@ def write_config(username, password):
         with open(os.path.expanduser(config_file), 'wb') as f:
             config.write(f)
 
+def parse_text(text):
+    """ returns a list of sentences with less than 100 caracters """
+    toSay = []
+    punct = [',',':',';','.','?','!'] # punctuation
+    words = text.split(' ')
+    sentence = ''
+    for w in words:
+        if w[len(w)-1] in punct: # encountered a punctuation mark
+            if (len(sentence)+len(w)+1 < 100): # is there enough space?
+                sentence += ' '+w # add the word
+                toSay.append(sentence.strip()) # save the sentence
+            else:
+                toSay.append(sentence.strip()) # save the sentence
+                toSay.append(w.strip()) # save the word as a sentence
+            sentence = '' # start another sentence
+        else:
+            if (len(sentence)+len(w)+1 < 100):
+                sentence += ' '+w # add the word
+            else:
+                toSay.append(sentence.strip()) # save the sentence
+                sentence = w # start a new sentence
+    if len(sentence) > 0:
+        toSay.append(sentence.strip())
+    return toSay
+
 def main():
     # Get arguments
     parser = ArgumentParser(description='Saycloud - text to Soundcloud.')
@@ -106,9 +131,14 @@ def main():
 
     if options.engine == 'google':
         headers = {'user-agent': 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0)'}
-        r = requests.get('http://translate.google.com/translate_tts?q='+options.say+'&tl=en')
+        mp3 = []
+
+        for i, sentence in enumerate(parse_text(options.say)):
+            r = requests.get('http://translate.google.com/translate_tts?q='+sentence+'&tl=en')
+            mp3.append(r.content)
+
         with open("%s.%s" % (tmp.name, extension), 'wb') as f:
-            f.write(r.content)
+            f.write(''.join(mp3))
             processed_speech = True
     else:
         if subprocess.call(['say', '-v', options.voice, '-o', tmp.name, "%s" % options.say]) == 0:
